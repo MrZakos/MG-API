@@ -37,7 +37,75 @@ A comprehensive .NET Web API with multi-layered caching, authentication, and ver
 - **MediatR** - CQRS pattern implementation
 - **FluentValidation** - Input validation
 - **AutoMapper** - Object mapping
+- **Polly** - Resilience and transient-fault-handling library
 - **xUnit** - Testing framework
+
+## 📋 CQRS Request Flow
+
+Here's a clean CQRS request flow showing where MediatR, FluentValidation, AutoMapper, and Polly fit:
+
+```
+┌─────────────────┐
+│   HTTP Request  │
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│   Controller    │
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│    MediatR      │ ◄─── Entry point for CQRS
+│   (IMediator)   │
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│ ValidationBehavior │ ◄─── FluentValidation
+│ (Pipeline Behavior) │      validates request
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│  RetryBehavior  │ ◄─── Polly handles retries
+│ (Pipeline Behavior) │    and circuit breaking
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│ Command/Query   │ ◄─── Business logic handler
+│    Handler      │
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│   Repository    │ ◄─── Data access layer
+│   (MongoDB)     │
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│   AutoMapper    │ ◄─── Maps entities to DTOs
+│   (Response)    │      for clean response
+└─────────┬───────┘
+          │
+          ▼
+┌─────────────────┐
+│  HTTP Response  │
+└─────────────────┘
+```
+
+### Flow Explanation:
+
+1. **Controller** receives HTTP request and sends it to MediatR
+2. **MediatR** routes the request through the pipeline behaviors
+3. **ValidationBehavior** uses FluentValidation to validate the request
+4. **RetryBehavior** uses Polly to handle transient failures with retry policies
+5. **Handler** processes the business logic and interacts with repositories
+6. **Repository** handles data persistence with MongoDB
+7. **AutoMapper** converts entities to DTOs for the response
+8. **HTTP Response** is returned to the client
 
 ## 🏃‍♂️ Quick Start
 
@@ -63,15 +131,15 @@ A comprehensive .NET Web API with multi-layered caching, authentication, and ver
    ```bash
    # Stop services
    docker-compose down
-   
+
    # Remove containers, networks, and volumes
    docker-compose down --volumes --remove-orphans
    ```
 
 5. **Access**
-   - Aspire MG.API https://localhost:7429 http://localhost:5440 
+   - Aspire MG.API https://localhost:7429 http://localhost:5440
    - Aspire Dashboard: https://localhost:17173/  http://localhost:15073/
-   - Docker Compose MG.API http://localhost:5000 
+   - Docker Compose MG.API http://localhost:5000
 
 ## 📡 API Endpoints
 
@@ -281,6 +349,7 @@ The API endpoints are organized using a clean, versioned structure that follows 
 - **Feature Grouping**: Related endpoints are grouped by domain (auth, data)
 - **Clean URLs**: No verb-based endpoints, proper HTTP methods
 - **Consistent Patterns**: Predictable URL structure across versions
+
 
 ![dashboad_resources_graph.jpg](images/dashboad_resources_graph.jpg)
 
