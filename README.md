@@ -78,11 +78,11 @@ A comprehensive .NET Web API with multi-layered caching, authentication, and ver
 - `POST /auth/login` - User/Admin login
 
 ### Data API V1
-- `GET /v1/data/{id}` - Get data by ID
+- `GET /v1/data/{id}` - Get data by ID (Admin or User)
 - `POST /v1/data` - Create new data (Admin only)
 - `PUT /v1/data/{id}` - Update data (Admin only)
 
-### Data API V2 (Enhanced Features)
+### Data API V2 (Was not focused, API versioning example)
 - `GET /v2/data/{id}` - Get data with optional metadata
 - `POST /v2/data` - Create with tags and metadata
 - `PUT /v2/data/{id}` - Update with enhanced tracking
