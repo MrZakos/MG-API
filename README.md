@@ -44,10 +44,11 @@ A comprehensive .NET Web API with multi-layered caching, authentication, and ver
 1. **Prerequisites**
    - Docker Desktop
    - .NET 9.0 SDK
+   - git clone https://github.com/MrZakos/MG-API.git
 
 2. **Run with .NET Aspire (Recommended)**
    ```bash
-   git clone https://github.com/MrZakos/MG-API.git
+
    cd MG-API\src
    dotnet run --project MG.AppHost
    ```
