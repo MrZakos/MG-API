@@ -1,0 +1,89 @@
+version: "3.8"
+
+services:
+  docker-compose-app-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    ports:
+      - "18888:18888"
+      - "18889:18889"
+    environment:
+      ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL: "http://localhost:18889"
+    networks:
+      - "aspire"
+    restart: "always"
+
+  cache:
+    image: "docker.io/library/redis:7.4"
+    command:
+      - "redis-server"
+      - "--requirepass"
+      - "redis_password_123"
+      - "--save"
+      - "60"
+      - "1"
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache-data:/data
+    networks:
+      - "aspire"
+
+  mongo:
+    image: "docker.io/library/mongo:8.0"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD: "mongo_password_123"
+      MONGO_INITDB_DATABASE: "mongodb"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - "aspire"
+
+  storage:
+    image: "mcr.microsoft.com/azure-storage/azurite:latest"
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose"
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+    networks:
+      - "aspire"
+
+  api:
+    build:
+      context: .
+      dockerfile: MG.Api/Dockerfile
+    ports:
+      - "5000:5440"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES: "true"
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:5440"
+      ConnectionStrings__cache: "cache:6379,password=redis_password_123"
+      ConnectionStrings__blobs: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://storage:10000/devstoreaccount1;"
+      ConnectionStrings__mongodb: "mongodb://admin:mongo_password_123@mongo:27017/mongodb?authSource=admin&authMechanism=SCRAM-SHA-256"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://docker-compose-app-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "api"
+    depends_on:
+      - cache
+      - mongo
+      - storage
+    networks:
+      - "aspire"
+
+networks:
+  aspire:
+    driver: bridge
+
+volumes:
+  cache-data:
+  mongo-data:
+  azurite-data:
