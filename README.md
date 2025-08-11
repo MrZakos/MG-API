@@ -48,13 +48,13 @@ A comprehensive .NET Web API with multi-layered caching, authentication, and ver
 2. **Run with .NET Aspire (Recommended)**
    ```bash
    git clone https://github.com/MrZakos/MG-API.git
-   cd src
+   cd MG-API\src
    dotnet run --project MG.AppHost
    ```
 
 3. **Run with Docker Compose**
    ```bash
-   cd src
+   cd MG-API\src
    docker-compose up -d
    ```
 
